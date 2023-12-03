@@ -45,7 +45,7 @@ selection = dataframe_with_selections(df)
 selected_ids = [ids[select_id] for select_id in selection]
 
 def update_database(selected_ids):
-   collection.update_many
+    collection.update_many
     for select_id in selected_ids:
         collection.update_many({'_id': select_id}, [{'$inc': {'helpful': 1}},{'$inc': {'total_votes': 1}}])
 if 'clicked' not in st.session_state:
