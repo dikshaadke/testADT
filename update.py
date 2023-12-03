@@ -18,9 +18,10 @@ review_id = st.text_input("Enter the review ID to mark as helpful:", "")
 # Button to mark review as helpful
 if st.button('Mark Review as Helpful'):
     try:
+        review_id_obj = ObjectId(review_id)
         # MongoDB operation to update the review
         update_criteria = {
-            "_id": review_id,
+            "_id": review_id_obj,
             "MovieName": movie_name.strip()
         }
         update_action = {
