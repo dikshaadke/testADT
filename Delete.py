@@ -15,13 +15,19 @@ st.title("Movie Review Manager")
 movie_name = st.text_input("Enter the movie name:", "Parasite_2019")
 
 # Button to delete reviews
-if st.button('Delete Non-helpful Reviews'):
+if st.button('Delete Required Reviews'):
     try:
         # MongoDB operation to delete reviews
-        delete_criteria = {"MovieName": movie_name.strip(), "helpful": 0}
+        # Reviews with 'helpful' equal to 0 and 20 words or fewer in 'text'
+        delete_criteria = {
+            "MovieName": movie_name.strip(), 
+            "helpful": 0,
+            "text": {"$regex": r"^\b(\w+\b\W*){0,20}$"}
+        }
         result = collection.delete_many(delete_criteria)
         
         # Display the result
         st.write(f"Documents deleted: {result.deleted_count}")
     except Exception as e:
         st.write("An error occurred:", e)
+
