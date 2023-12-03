@@ -1,6 +1,7 @@
 import streamlit as st
 from pymongo import MongoClient
 import os
+from bson.objectid import ObjectId
 
 # MongoDB setup
 conn_str = "mongodb+srv://imdb_adt:imdb_adt@cluster0.rcvxgzc.mongodb.net"
