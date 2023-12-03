@@ -3,10 +3,10 @@ from pymongo import MongoClient
 import os
 
 # MongoDB setup
-conn_str = "your_connection_string"
+conn_str = "mongodb+srv://imdb_adt:imdb_adt@cluster0.rcvxgzc.mongodb.net/"
 client = MongoClient(conn_str, serverSelectionTimeoutMS=60000)
 db = client['Moviedatabase']
-collection = db['moviedata_vectordb']
+collection = db['moviedata']
 
 # Streamlit UI
 st.title("Movie Review Manager")
