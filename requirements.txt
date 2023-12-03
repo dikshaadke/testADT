@@ -1,3 +1,4 @@
+config
 pymongo
 #scraper
 selenium==4.8.3
@@ -22,3 +23,4 @@ sentence-transformers
 
 #frontend
 streamlit
+
