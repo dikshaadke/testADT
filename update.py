@@ -12,7 +12,7 @@ collection = db['moviedata']
 st.title("Movie Review Manager")
 
 # Input for movie name and review ID
-movie_name = st.text_input("Enter the movie name:", "")
+movie_name = st.text_input("Enter the movie name:", "Parasite_2019")
 review_id = st.text_input("Enter the review ID to mark as helpful:", "")
 
 # Button to mark review as helpful
