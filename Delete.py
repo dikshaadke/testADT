@@ -22,7 +22,7 @@ if st.button('Delete Required Reviews'):
         delete_criteria = {
             "MovieName": movie_name.strip(), 
             "helpful": 0,
-            "text": {"$regex": r"^\b(\w+\b\W*){0,20}$"}
+            "comment": {"$regex": r"^\b(\w+\b\W*){0,20}$"}
         }
         result = collection.delete_many(delete_criteria)
         
