@@ -1,32 +1,72 @@
-import streamlit as st
 from pymongo import MongoClient
-import os
+from config import *
+import streamlit as st
+import pandas as pd
+import pymongo
+import numpy as np
+from config import * 
+from bson.objectid import ObjectId
 
-# MongoDB setup
-conn_str = "mongodb+srv://imdb_adt:imdb_adt@cluster0.rcvxgzc.mongodb.net/"
-client = MongoClient(conn_str, serverSelectionTimeoutMS=60000)
-db = client['Moviedatabase']
-collection = db['moviedata']
+st.set_page_config(layout="wide",initial_sidebar_state ="collapsed")
+st.title("Update")
+client = MongoClient(MONGODB_CLUSTER, serverSelectionTimeoutMS=60000)
+db = client[DATABASE_NAME]
+collection = db[COLLECTION_NAME]
 
-# Streamlit UI
-st.title("Movie Review Manager")
+revs = []
+for rev in collection.find({"MovieName":"Parasite_2019"}).sort("helpful",pymongo.DESCENDING).limit(11):
+    if rev['source']=="imdb":
+        revs.append(rev)
+df = pd.DataFrame(revs)
 
-# Input for movie name
-movie_name = st.text_input("Enter the movie name:", "Parasite_2019")
+ids = df['_id'].tolist()
+helpful = df['helpful'].tolist()
+total_votes = df['total_votes'].tolist()
+helpful_votes = [str(int(helpful[i])) + "/" + str(int(total_votes[i])) for i in range(len(df))]
+df['helpful/votes'] = helpful_votes
+# df['found helpful'] = [False for _ in range(len(df))]
+df.drop(['_id','MovieName','date','title','link','if_spoiler','source','helpful','total_votes'],inplace=True,axis=1)
 
-# Button to delete reviews
-if st.button('Delete Required Reviews'):
-    try:
-        # MongoDB operation to delete reviews
-        # Reviews with 'helpful' equal to 0 and 20 words or fewer in 'text'
-        delete_criteria = {
-            "MovieName": movie_name.strip(), 
-            "helpful": 0,
-            "comment": {"$regex": r"^\b(\w+\b\W*){0,20}$"}
+# st.dataframe(df,use_container_width=True,hide_index=True)
+def dataframe_with_selections(df):
+    df_with_selections = df.copy()
+    df_with_selections.insert(3, "found helpful?", False)
+    edited_df = st.data_editor(
+        df_with_selections,
+        hide_index=True,
+        column_config={"found helpful?": st.column_config.CheckboxColumn(required=True)},
+        disabled=df.columns,
+        use_container_width=True
+    )
+    selected_indices = list(np.where(edited_df['found helpful?'])[0])
+    return selected_indices
+
+
+selection = dataframe_with_selections(df)
+selected_ids = [ids[select_id] for select_id in selection]
+
+def update_database(selected_ids):
+    for select_id in selected_ids:
+        select_id = ObjectId(select_id)
+        update_criteria = {
+            "_id": select_id}
+        update_action = {
+            "$inc": {
+                "helpful": 1,
+                "total_votes": 1
+            }
         }
-        result = collection.delete_many(delete_criteria)
-        
-        # Display the result
-        st.write(f"Documents deleted: {result.deleted_count}")
-    except Exception as e:
-        st.write("An error occurred:", e)
+        collection.update_one(update_criteria, update_action)
+    
+
+if 'clicked' not in st.session_state:
+    st.session_state.clicked = False
+
+def click_button():
+    st.session_state.clicked = True
+
+st.button("Submit Update",help="It will submit the reviews that you selected to the database",on_click=click_button)
+
+if st.session_state.clicked:
+    update_database(selected_ids)
+    st.write("Updated the database, refresh to see the results")
